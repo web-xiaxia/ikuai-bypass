@@ -77,7 +77,7 @@ func (i *IKuai) ShowIpGroupByName(name string) (result []IpGroupData, err error)
 	return
 }
 
-func (i *IKuai) AddIpGroup(groupName, addrPool string) error {
+func (i *IKuai) AddIpGroup(groupName, addrPool string) (int, error) {
 	param := struct {
 		AddrPool  string `json:"addr_pool"`
 		Comment   string `json:"comment"`
@@ -94,6 +94,37 @@ func (i *IKuai) AddIpGroup(groupName, addrPool string) error {
 	req := CallReq{
 		FuncName: FUNC_NAME_IP_GROUP,
 		Action:   "add",
+		Param:    &param,
+	}
+	resp := CallResp{}
+	err := postJson(i.client, i.baseurl+"/Action/call", &req, &resp)
+	if err != nil {
+		return 0, err
+	}
+	if resp.Result != 30000 {
+		return 0, errors.New(resp.ErrMsg)
+	}
+	return resp.RowID, nil
+}
+func (i *IKuai) UpdateIpGroup(id int, groupName, addrPool string) error {
+	param := struct {
+		Id        int    `json:"id"`
+		AddrPool  string `json:"addr_pool"`
+		Comment   string `json:"comment"`
+		GroupName string `json:"group_name"`
+		NewRow    bool   `json:"newRow"`
+		Type      int    `json:"type"`
+	}{
+		Id:        id,
+		GroupName: groupName,
+		AddrPool:  addrPool,
+		Comment:   COMMENT_IKUAI_BYPASS + "_" + groupName, //自定义的备注无效的问题
+		NewRow:    true,
+		Type:      0,
+	}
+	req := CallReq{
+		FuncName: FUNC_NAME_IP_GROUP,
+		Action:   "edit",
 		Param:    &param,
 	}
 	resp := CallResp{}
@@ -141,7 +172,7 @@ func (i *IKuai) GetIpGroup(tag string) (preIds string, err error) {
 	var ids []string // 初始化 ids 切片
 
 	var data []IpGroupData
-	data, err = i.ShowIpGroupByComment(tagComment)  // 获取数据并处理错误
+	data, err = i.ShowIpGroupByComment(tagComment) // 获取数据并处理错误
 	if err != nil {
 		return "", err // 返回错误
 	}
@@ -150,14 +181,14 @@ func (i *IKuai) GetIpGroup(tag string) (preIds string, err error) {
 		ids = append(ids, strconv.Itoa(d.ID))
 	}
 
-        // 如果没有找到匹配的IP分组，则返回空字符串和nil error
+	// 如果没有找到匹配的IP分组，则返回空字符串和nil error
 	if len(ids) <= 0 {
 		return "", nil // 返回空字符串和 nil 错误
 	}
 
-	preIds = strings.Join(ids, ",")  // 将 IDs 连接成逗号分隔的字符串
+	preIds = strings.Join(ids, ",") // 将 IDs 连接成逗号分隔的字符串
 
-	return preIds, nil   // 返回 IDs 和 nil 错误
+	return preIds, nil // 返回 IDs 和 nil 错误
 }
 
 func (i *IKuai) DelIKuaiBypassIpGroup(cleanTag string) (err error) {

@@ -32,7 +32,7 @@ func updateIpgroup() {
 				log.Println("ip分组== 获取准备更新的IP分组列表成功", ipGroup.Name, preIds)
 			}
 
-			err = updateIpGroup(iKuai, ipGroup.Name, ipGroup.URL)
+			ipGroupInfoList, err := updateIpGroup(iKuai, ipGroup.Name, ipGroup.URL)
 			if err != nil {
 				log.Printf("ip分组== 添加IP分组'%s@%s'失败：%s\n", ipGroup.Name, ipGroup.URL, err)
 			} else {
@@ -41,12 +41,21 @@ func updateIpgroup() {
 				if err == nil {
 					log.Println("ip分组== 删除旧的IP分组列表成功", ipGroup.Name)
 					log.Println("ip分组== 更新完成", ipGroup.Name)
+
+					for _, info := range ipGroupInfoList {
+						err = iKuai.UpdateIpGroup(info.Id, info.Name, info.IpGroup)
+						if err == nil {
+							log.Println("ip分组== 修改名称成功", info.Name)
+						} else {
+							log.Println("ip分组== 修改名称失败", info.Name)
+						}
+					}
 				} else {
 					log.Println("ip分组== 删除旧的IP分组列表有错误", ipGroup.Name, err)
 				}
 			}
 		} else {
-			err := updateIpGroup(iKuai, ipGroup.Name, ipGroup.URL)
+			_, err := updateIpGroup(iKuai, ipGroup.Name, ipGroup.URL)
 			if err != nil {
 				log.Printf("ip分组== 添加IP分组'%s@%s'失败：%s\n", ipGroup.Name, ipGroup.URL, err)
 			} else {
@@ -156,7 +165,7 @@ func updateIpv6group() {
 				log.Println("ipv6分组== 获取准备更新的IPv6分组列表成功", ipv6Group.Name, preIds)
 			}
 
-			err = updateIpv6Group(iKuai, ipv6Group.Name, ipv6Group.URL)
+			ipGroupInfoList, err := updateIpv6Group(iKuai, ipv6Group.Name, ipv6Group.URL)
 			if err != nil {
 				log.Printf("ipv6分组== 添加IPV6分组'%s@%s'失败：%s\n", ipv6Group.Name, ipv6Group.URL, err)
 			} else {
@@ -165,12 +174,22 @@ func updateIpv6group() {
 				if err == nil {
 					log.Println("ipv6分组== 删除旧的IPv6分组列表成功", ipv6Group.Name, preIds)
 					log.Println("ipv6分组== 更新完成", ipv6Group.Name)
+
+					for _, info := range ipGroupInfoList {
+						err = iKuai.UpdateIpv6Group(info.Id, info.Name, info.IpGroup)
+						if err == nil {
+							log.Println("ipv6分组== 修改名称成功", info.Name)
+						} else {
+							log.Println("ipv6分组== 修改名称失败", info.Name)
+						}
+					}
 				} else {
 					log.Println("ipv6分组== 删除旧的IPv6分组列表有错误", ipv6Group.Name, err)
 				}
 			}
+
 		} else {
-			err := updateIpv6Group(iKuai, ipv6Group.Name, ipv6Group.URL)
+			_, err := updateIpv6Group(iKuai, ipv6Group.Name, ipv6Group.URL)
 			if err != nil {
 				log.Printf("ipv6分组== 添加IPV6分组'%s@%s'失败：%s\n", ipv6Group.Name, ipv6Group.URL, err)
 			} else {
